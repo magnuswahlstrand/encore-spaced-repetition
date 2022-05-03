@@ -1,0 +1,11 @@
+version: 1
+packages:
+    - path: "db"
+      engine: "postgresql"
+      name: "db"
+      schema: "migrations"
+      queries: "db/query.sql"
+      emit_empty_slices: true
+      overrides:
+        - go_type: "encore.dev/types/uuid.UUID"
+          db_type: "uuid"
