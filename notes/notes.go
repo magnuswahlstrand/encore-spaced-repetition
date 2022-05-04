@@ -12,7 +12,7 @@ import (
 var notedb = db.New(sqldb.Named("notes").Stdlib())
 
 type ListResponse struct {
-	Notes []Note
+	Notes []Note `json:"notes"`
 }
 
 //encore:api public method=GET path=/note
