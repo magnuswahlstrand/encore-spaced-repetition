@@ -112,6 +112,7 @@ function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) =
 
 function Example() {
     console.log("starting in environment", process.env.ENVIRONMENT || "local")
+    console.log(process.env)
 
     const form = useForm({
         initialValues: {
