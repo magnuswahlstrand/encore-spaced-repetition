@@ -6,11 +6,12 @@ import {Button, Container, createStyles, Table, TextInput} from '@mantine/core';
 
 import Client, {notes} from "./api/api";
 import {useForm} from "@mantine/hooks";
+import moment from "moment/moment";
 
 
 const queryClient = new QueryClient()
 
-var client = new Client("local")
+var client = new Client(process.env.ENVIRONMENT || "local")
 
 const useMutateTodo = () => {
     const queryClient = useQueryClient()
@@ -93,10 +94,15 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) => void) {
+    const until_review = moment(note.next_review).fromNow()
+
+
     return (<tr key={note.id}>
         <td>{note.front}</td>
         <td>{note.back}</td>
-        <td>{note.next_review}</td>
+
+        <td>{until_review}</td>
+        <td>{moment(note.next_review).diff(moment(),'days')}</td>
         <td>
             {buttons.map(btn => {
                 return <Button mr="xs" color={btn.color} compact={true}
