@@ -31,5 +31,5 @@ func calculateReviewStatus(answer, repetitionNumber int32, easinessFactor float6
 }
 
 func nextReviewTime(interval int32) time.Time {
-	return time.Now().AddDate(0, 0, int(interval))
+	return time.Now().UTC().AddDate(0, 0, int(interval))
 }

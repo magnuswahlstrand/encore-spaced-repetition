@@ -17,7 +17,7 @@ const environments: { [key: string]: string } = {
     "local": "local",
 }
 
-var client = new Client(environments[process.env.REACT_APP_VERCEL_ENV || "local"])
+let client = new Client(environments[process.env.REACT_APP_VERCEL_ENV || "local"])
 
 const useMutateTodo = () => {
     const queryClient = useQueryClient()
@@ -97,20 +97,20 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) => void) {
-    const until_review = moment(note.next_review).fromNow()
-
+    const until_review = moment(note.next_review).from(moment.utc())
+    const is_due = moment(note.next_review).diff(moment(), 'seconds') < 0
 
     return (<tr key={note.id}>
         <td>{note.front}</td>
         <td>{note.back}</td>
 
-        <td>{until_review}</td>
-        <td>{moment(note.next_review).diff(moment(), 'days')}</td>
         <td>
-            {buttons.map(btn => {
-                return <Button mr="xs" color={btn.color} compact={true}
-                               onClick={() => handleClick(note.id, btn.answer)}>{btn.answer}</Button>
-            })}
+            {
+                is_due ? buttons.map(btn => {
+                    return <Button mr="xs" color={btn.color} compact={true} disabled={!is_due}
+                                   onClick={() => handleClick(note.id, btn.answer)}>{btn.answer}</Button>
+                }): "due " + until_review
+            }
 
         </td>
     </tr>);
@@ -170,7 +170,6 @@ function Example() {
             <td>
                 <Button type="submit" color="dark" compact={true}>Add</Button>
             </td>
-            <td></td>
         </tr>
     )
 
@@ -181,8 +180,7 @@ function Example() {
                 <tr>
                     <th>Front</th>
                     <th>Back</th>
-                    <th>Next Review</th>
-                    <th>Button</th>
+                    <th>Review</th>
                 </tr>
                 </thead>
                 <tbody>{rows}</tbody>
