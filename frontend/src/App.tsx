@@ -50,9 +50,6 @@ const useNewTodo = (p: () => void) => {
     )
 }
 
-// {id: variables.id}], data
-
-
 interface reviewParams {
     id: string,
     answer: string
@@ -114,6 +111,7 @@ function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) =
 }
 
 function Example() {
+    console.log("starting in environment", process.env.ENVIRONMENT || "local")
 
     const form = useForm({
         initialValues: {
@@ -129,7 +127,7 @@ function Example() {
 
     if (isLoading) return <div>'Loading...'</div>
 
-    if (error) return <div>'An error has occurred: ' + error</div>
+    if (error) return <div>'An error has occurred: ' + <>{error}</></div>
 
     console.log(data)
 
