@@ -10,8 +10,14 @@ import moment from "moment/moment";
 
 
 const queryClient = new QueryClient()
+const environments: { [key: string]: string } = {
+    "production": "production",
+    "preview": "staging",
+    "development": "staging",
+    "local": "local",
+}
 
-var client = new Client(process.env.ENVIRONMENT || "local")
+var client = new Client(environments[process.env.REACT_APP_VERCEL_ENV || "local"])
 
 const useMutateTodo = () => {
     const queryClient = useQueryClient()
@@ -99,7 +105,7 @@ function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) =
         <td>{note.back}</td>
 
         <td>{until_review}</td>
-        <td>{moment(note.next_review).diff(moment(),'days')}</td>
+        <td>{moment(note.next_review).diff(moment(), 'days')}</td>
         <td>
             {buttons.map(btn => {
                 return <Button mr="xs" color={btn.color} compact={true}
