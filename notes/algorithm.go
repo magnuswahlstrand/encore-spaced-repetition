@@ -9,7 +9,6 @@ import (
 const (
 	learningInterval1Minute   = 1 * time.Minute
 	learningInterval10Minutes = 10 * time.Minute
-	graduatingInterval        = 24 * time.Hour
 )
 
 var easiness = map[int32]float64{
@@ -59,7 +58,7 @@ func gotoReviewPhase(n *Note) {
 	n.IsLearning = false
 	n.RepetitionNumber = 0
 	n.Interval = 60 * 24
-	n.NextReview = n.NextReview.Add(graduatingInterval)
+	n.NextReview = n.NextReview.Add(time.Duration(n.Interval) * time.Minute)
 }
 
 func handleLearningPhase(n *Note, answer int32) {
@@ -85,8 +84,4 @@ func handleLearningPhase(n *Note, answer int32) {
 	default:
 		log.Fatalln("shouldn't happen", answer)
 	}
-}
-
-func nextReviewTime(interval int32) time.Time {
-	return time.Now().UTC().AddDate(0, 0, int(interval))
 }

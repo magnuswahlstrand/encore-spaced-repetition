@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import {QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient} from 'react-query'
 import {ReactQueryDevtools} from 'react-query/devtools'
@@ -96,33 +96,44 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     },
 }));
 
-// const look_ahead = 60*20;
-const look_ahead = 60*60*24;
+const look_ahead = 60 * 20;
 
-function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) => void) {
-    const until_review = moment(note.next_review).from(moment.utc())
-    const is_due = moment(note.next_review).diff(moment(), 'seconds') <= look_ahead
+function ReviewRow(now: moment.Moment, note: notes.Note, handleClick: (id: string, answer: string) => void) {
+    const until_review = moment(note.next_review).from(now)
+    const is_due = moment(note.next_review).diff(now, 'seconds') <= look_ahead
 
     return (<tr key={note.id}>
         <td>{note.front}</td>
         <td>{note.back}</td>
 
         <td>
-            {moment(note.next_review).diff(moment(), 'seconds')}.
             {
                 is_due ? buttons.map(btn => {
                     return <Button mr="xs" color={btn.color} compact={true} disabled={!is_due}
                                    onClick={() => handleClick(note.id, btn.answer)}>{btn.answer}</Button>
-                }): "due " + until_review
+                }) : "due " + until_review
             }
 
         </td>
     </tr>);
 }
 
+function useNow() {
+    const [now, setNow] = useState(moment());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(() => moment());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+    return now;
+}
+
 function Example() {
     console.log("starting in environment", process.env.ENVIRONMENT || "local")
     console.log(process.env)
+    const now = useNow();
 
     const form = useForm({
         initialValues: {
@@ -140,8 +151,6 @@ function Example() {
 
     if (error) return <div>'An error has occurred: ' + <>{error}</></div>
 
-    console.log(data)
-
     if (!data) {
         return null
     }
@@ -151,7 +160,7 @@ function Example() {
             const handleClick = (id: string, answer: string) => {
                 mutate({id: id, answer: answer});
             };
-            return ReviewRow(note, handleClick);
+            return ReviewRow(now, note, handleClick);
         }
     );
 
