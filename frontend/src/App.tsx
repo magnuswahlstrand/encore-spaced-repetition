@@ -96,15 +96,19 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     },
 }));
 
+// const look_ahead = 60*20;
+const look_ahead = 60*60*24;
+
 function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) => void) {
     const until_review = moment(note.next_review).from(moment.utc())
-    const is_due = moment(note.next_review).diff(moment(), 'seconds') < 0
+    const is_due = moment(note.next_review).diff(moment(), 'seconds') <= look_ahead
 
     return (<tr key={note.id}>
         <td>{note.front}</td>
         <td>{note.back}</td>
 
         <td>
+            {moment(note.next_review).diff(moment(), 'seconds')}.
             {
                 is_due ? buttons.map(btn => {
                     return <Button mr="xs" color={btn.color} compact={true} disabled={!is_due}
