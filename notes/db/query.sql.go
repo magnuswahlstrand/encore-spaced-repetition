@@ -15,7 +15,7 @@ import (
 const create = `-- name: Create :one
 INSERT INTO notes (note_front, note_back, easiness_factor, repetition_number, interval, next_review)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, easiness_factor, repetition_number, interval, note_front, note_back, next_review
+RETURNING id, easiness_factor, repetition_number, interval, note_front, note_back, next_review, is_learning
 `
 
 type CreateParams struct {
@@ -45,12 +45,13 @@ func (q *Queries) Create(ctx context.Context, arg CreateParams) (Note, error) {
 		&i.NoteFront,
 		&i.NoteBack,
 		&i.NextReview,
+		&i.IsLearning,
 	)
 	return i, err
 }
 
 const get = `-- name: Get :one
-SELECT id, easiness_factor, repetition_number, interval, note_front, note_back, next_review
+SELECT id, easiness_factor, repetition_number, interval, note_front, note_back, next_review, is_learning
 FROM notes
 WHERE id = $1
 `
@@ -66,12 +67,13 @@ func (q *Queries) Get(ctx context.Context, id uuid.UUID) (Note, error) {
 		&i.NoteFront,
 		&i.NoteBack,
 		&i.NextReview,
+		&i.IsLearning,
 	)
 	return i, err
 }
 
 const listAll = `-- name: ListAll :many
-SELECT id, easiness_factor, repetition_number, interval, note_front, note_back, next_review
+SELECT id, easiness_factor, repetition_number, interval, note_front, note_back, next_review, is_learning
 FROM notes
 `
 
@@ -92,6 +94,7 @@ func (q *Queries) ListAll(ctx context.Context) ([]Note, error) {
 			&i.NoteFront,
 			&i.NoteBack,
 			&i.NextReview,
+			&i.IsLearning,
 		); err != nil {
 			return nil, err
 		}
@@ -108,7 +111,7 @@ func (q *Queries) ListAll(ctx context.Context) ([]Note, error) {
 
 const listDue = `-- name: ListDue :many
 
-SELECT id, easiness_factor, repetition_number, interval, note_front, note_back, next_review
+SELECT id, easiness_factor, repetition_number, interval, note_front, note_back, next_review, is_learning
 FROM notes
 WHERE next_review < NOW()
 `
@@ -131,6 +134,7 @@ func (q *Queries) ListDue(ctx context.Context) ([]Note, error) {
 			&i.NoteFront,
 			&i.NoteBack,
 			&i.NextReview,
+			&i.IsLearning,
 		); err != nil {
 			return nil, err
 		}

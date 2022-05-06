@@ -18,4 +18,5 @@ type Note struct {
 	NoteFront        string
 	NoteBack         string
 	NextReview       time.Time
+	IsLearning       bool
 }

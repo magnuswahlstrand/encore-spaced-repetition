@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import {QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient} from 'react-query'
 import {ReactQueryDevtools} from 'react-query/devtools'
@@ -10,8 +10,14 @@ import moment from "moment/moment";
 
 
 const queryClient = new QueryClient()
+const environments: { [key: string]: string } = {
+    "production": "production",
+    "preview": "staging",
+    "development": "staging",
+    "local": "local",
+}
 
-var client = new Client(process.env.ENVIRONMENT || "local")
+let client = new Client(environments[process.env.REACT_APP_VERCEL_ENV || "local"])
 
 const useMutateTodo = () => {
     const queryClient = useQueryClient()
@@ -90,28 +96,44 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     },
 }));
 
-function ReviewRow(note: notes.Note, handleClick: (id: string, answer: string) => void) {
-    const until_review = moment(note.next_review).fromNow()
+const look_ahead = 60 * 20;
 
+function ReviewRow(now: moment.Moment, note: notes.Note, handleClick: (id: string, answer: string) => void) {
+    const until_review = moment(note.next_review).from(now)
+    const is_due = moment(note.next_review).diff(now, 'seconds') <= look_ahead
 
     return (<tr key={note.id}>
         <td>{note.front}</td>
         <td>{note.back}</td>
 
-        <td>{until_review}</td>
-        <td>{moment(note.next_review).diff(moment(),'days')}</td>
         <td>
-            {buttons.map(btn => {
-                return <Button mr="xs" color={btn.color} compact={true}
-                               onClick={() => handleClick(note.id, btn.answer)}>{btn.answer}</Button>
-            })}
+            {
+                is_due ? buttons.map(btn => {
+                    return <Button mr="xs" color={btn.color} compact={true} disabled={!is_due}
+                                   onClick={() => handleClick(note.id, btn.answer)}>{btn.answer}</Button>
+                }) : "due " + until_review
+            }
 
         </td>
     </tr>);
 }
 
+function useNow() {
+    const [now, setNow] = useState(moment());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(() => moment());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+    return now;
+}
+
 function Example() {
     console.log("starting in environment", process.env.ENVIRONMENT || "local")
+    console.log(process.env)
+    const now = useNow();
 
     const form = useForm({
         initialValues: {
@@ -129,8 +151,6 @@ function Example() {
 
     if (error) return <div>'An error has occurred: ' + <>{error}</></div>
 
-    console.log(data)
-
     if (!data) {
         return null
     }
@@ -140,7 +160,7 @@ function Example() {
             const handleClick = (id: string, answer: string) => {
                 mutate({id: id, answer: answer});
             };
-            return ReviewRow(note, handleClick);
+            return ReviewRow(now, note, handleClick);
         }
     );
 
@@ -163,7 +183,6 @@ function Example() {
             <td>
                 <Button type="submit" color="dark" compact={true}>Add</Button>
             </td>
-            <td></td>
         </tr>
     )
 
@@ -174,8 +193,7 @@ function Example() {
                 <tr>
                     <th>Front</th>
                     <th>Back</th>
-                    <th>Next Review</th>
-                    <th>Button</th>
+                    <th>Review</th>
                 </tr>
                 </thead>
                 <tbody>{rows}</tbody>
